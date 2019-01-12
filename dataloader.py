@@ -29,13 +29,15 @@ def _make_dataset(dir):
 
 
     framesPath = []
+    index = -1
     # Find and loop over all the clips in root `dir`.
-    for index, folder in enumerate(os.listdir(dir)):
+    for folder in os.listdir(dir):
         clipsFolderPath = os.path.join(dir, folder)
         # Skip items which are not folders.
         if not (os.path.isdir(clipsFolderPath)):
             continue
         framesPath.append([])
+        index = index + 1
         # Find and loop over all the frames inside the clip.
         for image in sorted(os.listdir(clipsFolderPath)):
             # Add path to list.
@@ -116,7 +118,7 @@ class SuperSloMo(data.Dataset):
     """
 
 
-    def __init__(self, root, transform=None, dim=(640, 360), randomCropSize=(352, 352), train=True):
+    def __init__(self, root, transform=None, dim=(640, 360), randomCropSize=(352, 352), train=True, first_frame_test_slow=0):
         """
         Parameters
         ----------
@@ -151,7 +153,7 @@ class SuperSloMo(data.Dataset):
         self.root           = root
         self.transform      = transform
         self.train          = train
-
+        self.first_frame_test_slow = first_frame_test_slow
         self.framesPath     = framesPath
 
     def __getitem__(self, index):
@@ -180,7 +182,7 @@ class SuperSloMo(data.Dataset):
 
         sample = []
         
-        if (self.train):
+        if (self.train=='train'):
             ### Data Augmentation ###
             # To select random 9 frames from 12 frames in a clip
             firstFrame = random.randint(0, 3)
@@ -199,6 +201,24 @@ class SuperSloMo(data.Dataset):
                 returnIndex = firstFrame - IFrameIndex + 7
             # Random flip frame
             randomFrameFlip = random.randint(0, 1)
+        elif (self.train=='test'):
+            # Fixed settings to return same samples every epoch.
+            # For validation/test sets.
+            firstFrame = 0
+            cropArea = (0, 0, self.randomCropSize[0], self.randomCropSize[1])
+            IFrameIndex = ((index) % 7  + 1)
+            returnIndex = IFrameIndex - 1
+            frameRange = range(firstFrame, firstFrame + 2)
+            randomFrameFlip = 0
+        elif (self.train == 'test_slow'):
+            # Fixed settings to return same samples every epoch.
+            # For validation/test sets.
+            firstFrame = self.first_frame_test_slow
+            cropArea = (0, 0, self.randomCropSize[0], self.randomCropSize[1])
+            IFrameIndex = ((index) % 7 + 1)
+            returnIndex = IFrameIndex - 1
+            frameRange = range(firstFrame, firstFrame + 2)
+            randomFrameFlip = 0
         else:
             # Fixed settings to return same samples every epoch.
             # For validation/test sets.
@@ -206,7 +226,7 @@ class SuperSloMo(data.Dataset):
             cropArea = (0, 0, self.randomCropSize[0], self.randomCropSize[1])
             IFrameIndex = ((index) % 7  + 1)
             returnIndex = IFrameIndex - 1
-            frameRange = [0, IFrameIndex, 8]
+            frameRange = range(firstFrame, firstFrame + 9)
             randomFrameFlip = 0
         
         # Loop over for all frames corresponding to the `index`.

@@ -5,7 +5,16 @@ __pycache__/
 
 # C extensions
 *.so
-
+.idea/*
+dataset/*
+SuperSloMo.ckpt
+*.jpg
+*.gif
+log/*
+.DS_Store
+intrpOut*
+gt/*
+videos/*
 # Distribution / packaging
 .Python
 build/
