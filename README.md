@@ -70,3 +70,6 @@ More info TBA
 |Add evaluation script for UCF dataset | TBD|  
 |Add getting started guide | TBD|  
 |Add video converter script | In progress|  
+
+
+## 执行测试脚本predict.py和predict_slow.py，可直接运行，具体例子可见百度网盘。
